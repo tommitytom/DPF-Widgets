@@ -90,8 +90,8 @@ private:
        #else
         const double scaleFactor = self->getTopLevelWidget()->getScaleFactor();
        #endif
-        const uint width = self->getWidth() ?: 640 * scaleFactor;
-        const uint height = self->getHeight() ?: 480 * scaleFactor;
+        const uint width = self->getWidth() ? self->getWidth() : 640 * scaleFactor;
+        const uint height = self->getHeight() ? self->getHeight() : 480 * scaleFactor;
 
         lv_area_set(&updatedArea, 0, 0, width, height);
 
