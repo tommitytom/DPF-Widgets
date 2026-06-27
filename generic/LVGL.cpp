@@ -764,7 +764,21 @@ void LVGLWidget<SubWidget>::PrivateData::repaint(const Rectangle<uint>&)
     self->repaint();
 }
 
-template class LVGLWidget<SubWidget>;
+// MSVC warns C4661 ("no suitable definition provided for explicit template
+// instantiation request") on these LVGLWidget<T> instantiations: the
+// constructors are supplied only as per-type explicit specializations, not by
+// the primary template, so the generic instantiation legitimately has no
+// definition for the ones that don't apply to T. Intentional and harmless.
+#ifdef _MSC_VER
+# define DPF_LVGL_INSTANTIATE(...) \
+    __pragma(warning(push)) __pragma(warning(disable: 4661)) \
+    template class __VA_ARGS__; \
+    __pragma(warning(pop))
+#else
+# define DPF_LVGL_INSTANTIATE(...) template class __VA_ARGS__;
+#endif
+
+DPF_LVGL_INSTANTIATE(LVGLWidget<SubWidget>)
 
 // --------------------------------------------------------------------------------------------------------------------
 // LVGLTopLevelWidget
@@ -784,7 +798,7 @@ LVGLWidget<TopLevelWidget>::~LVGLWidget()
     delete lvglData;
 }
 
-template class LVGLWidget<TopLevelWidget>;
+DPF_LVGL_INSTANTIATE(LVGLWidget<TopLevelWidget>)
 
 // --------------------------------------------------------------------------------------------------------------------
 // LVGLStandaloneWindow
@@ -812,7 +826,9 @@ LVGLWidget<StandaloneWindow>::~LVGLWidget()
     delete lvglData;
 }
 
-template class LVGLWidget<StandaloneWindow>;
+DPF_LVGL_INSTANTIATE(LVGLWidget<StandaloneWindow>)
+
+#undef DPF_LVGL_INSTANTIATE
 
 // --------------------------------------------------------------------------------------------------------------------
 
