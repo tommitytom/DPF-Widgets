@@ -288,18 +288,28 @@ private:
         }
        #endif
 
+        // LVGL's flush `area` is INCLUSIVE (x2/y2 = last pixel), but updatedArea is accumulated in the
+        // EXCLUSIVE/count convention the upload path expects: the full-size fast path checks `x2 == width`,
+        // the partial upload takes `x2 - x1` as the width, and onResize seeds `lv_area_set(.., width, height)`.
+        // Convert before accumulating — otherwise a full-screen flush stores `width-1`, misses the full-size
+        // path, and uploads one column/row short, leaving a stale/transparent 1px edge on the display's right
+        // + bottom (which composites to white / retains old content in DIRECT render mode).
+        lv_area_t excl = *area;
+        excl.x2 += 1;
+        excl.y2 += 1;
+
         if (evthis->updatedArea.x1 == 0 &&
             evthis->updatedArea.y1 == 0 &&
             evthis->updatedArea.x2 == 0 &&
             evthis->updatedArea.y2 == 0)
         {
-            lv_area_copy(&evthis->updatedArea, area);
+            lv_area_copy(&evthis->updatedArea, &excl);
         }
         else
         {
             lv_area_t tmp;
             lv_area_copy(&tmp, &evthis->updatedArea);
-            _lv_area_join(&evthis->updatedArea, &tmp, area);
+            _lv_area_join(&evthis->updatedArea, &tmp, &excl);
         }
 
         d_debug("lvgl flush with updated area %dx%d %dx%d",
