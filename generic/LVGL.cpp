@@ -367,6 +367,12 @@ private:
 // --------------------------------------------------------------------------------------------------------------------
 
 template <class BaseWidget>
+void LVGLWidget<BaseWidget>::lvglMakeCurrent()
+{
+    lv_global = lvglData->global;
+}
+
+template <class BaseWidget>
 void LVGLWidget<BaseWidget>::idleCallback()
 {
     lv_global = lvglData->global;

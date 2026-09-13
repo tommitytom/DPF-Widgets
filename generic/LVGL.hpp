@@ -139,6 +139,20 @@ public:
     ~LVGLWidget() override;
 
 protected:
+   /**
+      Make this widget's LVGL instance current for the calling thread.
+
+      Each LVGLWidget owns its own lv_global_t, picked up by LVGL through lv_global_default() - which
+      reads a thread-local this class points at its own instance around the callbacks it controls
+      (idleCallback, onResize). Anywhere else the pointer is simply whatever ran last, which with two
+      of these alive in one host is the OTHER widget's instance, and LVGL then resolves objects against
+      a display they do not belong to.
+
+      So a subclass that reaches LVGL from a callback this class does not own - a DPF UI callback such
+      as uiIdle(), a destructor, an event handler that forwards into script - must call this first.
+    */
+    void lvglMakeCurrent();
+
     void idleCallback() override;
     void onDisplay() override;
     bool onKeyboard(const Widget::KeyboardEvent& event) override;
